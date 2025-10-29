@@ -11,8 +11,8 @@ import (
 type simpleQueueType int
 
 const (
-	Durable simpleQueueType = iota
-	Transient
+	SimpleQueueDurable simpleQueueType = iota
+	SimpleQueueTransient
 )
 
 func PublishJSON[T any](ch *amqp.Channel, exchange, key string, val T) error {
@@ -44,9 +44,9 @@ func DeclareAndBind(
 	}
 	queue, err := ch.QueueDeclare(
 		queueName,
-		queueType == Durable,
-		queueType == Transient,
-		queueType == Transient,
+		queueType == SimpleQueueDurable,
+		queueType != SimpleQueueDurable,
+		queueType != SimpleQueueDurable,
 		false,
 		nil,
 	)
