@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
 
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
@@ -40,8 +38,34 @@ func main() {
 	}
 	fmt.Printf("Queue %v declared and bound!\n", queue.Name)
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	<-signalChan
-	fmt.Println("RabbitMQ connection closed.")
+	state := gamelogic.NewGameState(username)
+	for {
+		words := gamelogic.GetInput()
+		if len(words) == 0 {
+			continue
+		}
+		switch words[0] {
+		case "spawn":
+			err = state.CommandSpawn(words)
+			if err != nil {
+				fmt.Printf("Could not spawn unit: %v\n", err)
+			}
+		case "quit":
+			gamelogic.PrintQuit()
+			return
+		case "move":
+			_, err := state.CommandMove(words)
+			if err != nil {
+				fmt.Printf("Could not move unit: %v\n", err)
+			}
+		case "status":
+			state.CommandStatus()
+		case "help":
+			gamelogic.PrintClientHelp()
+		case "spam":
+			fmt.Println("Spamming not allowed yet!")
+		default:
+			fmt.Printf("Unknown command: %s\n", words[0])
+		}
+	}
 }
